@@ -33,6 +33,9 @@ jobs:
           pip install -r requirements.txt  # Make sure you have a `requirements.txt` file
 
       - name: Run feature pipeline notebook
+        env: 
+          HOPSWORKS_PROJECT_NAME: ${{ secrets.HOPSWORKS_PROJECT_NAME }}
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
         run: |
           source venv/bin/activate
           jupyter nbconvert --execute --to notebook notebooks/feature_pipeline.ipynb
