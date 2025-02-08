@@ -7,7 +7,7 @@ on:
 
 env:
   PYTHON_VERSION: "3.12"  
-  
+
 jobs:
   feature_pipeline:
     runs-on: ubuntu-latest
@@ -31,6 +31,10 @@ jobs:
         run: |
           source venv/bin/activate
           pip install -r requirements.txt  # Make sure you have a `requirements.txt` file
+
+      - name: Debug: List files in notebooks directory
+        run: |
+          ls -alh notebooks/
 
       - name: Run feature pipeline notebook
         env: 
