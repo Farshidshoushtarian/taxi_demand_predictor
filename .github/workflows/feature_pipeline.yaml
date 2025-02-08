@@ -26,11 +26,7 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-      
-      - name: Install dependencies
-        run: |
-          source venv/bin/activate
-          pip install -r requirements.txt  # Make sure you have a `requirements.txt` file
+          pip install -r requirements.txt  # Ensure dependencies are installed here
 
       - name: Debug: List files in notebooks directory
         run: |
