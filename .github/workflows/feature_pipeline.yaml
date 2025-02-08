@@ -46,7 +46,7 @@
       
       - name: Install Poetry
         run: |
-          curl -sSL ${{ env.POETRY_URL }} | python - --version ${{ env.POETRY_VERSION }}
+          curl -sSL ${{ env.POETRY_URL }} | python -
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       
       - name: Install Dependencies
