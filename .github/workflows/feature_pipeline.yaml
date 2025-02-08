@@ -32,10 +32,7 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt  # Make sure you have a `requirements.txt` file
 
-      - name: Run feature generation script
-        env:
-          HOPSWORKS_PROJECT_NAME: ${{ secrets.HOPSWORKS_PROJECT_NAME }}
-          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+      - name: Run feature pipeline notebook
         run: |
           source venv/bin/activate
-          make features
+          jupyter nbconvert --execute --to notebook notebooks/feature_pipeline.ipynb
