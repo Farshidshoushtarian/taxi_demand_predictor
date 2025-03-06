@@ -30,4 +30,4 @@ jobs:
       - name: Execute inference pipeline script
         run: |
           source venv/bin/activate
-          python -c "import sys, os; sys.path.append(os.path.join(os.getcwd(), 'src')); import src.inference_pipeline"
+          python src/inference_pipeline.py
