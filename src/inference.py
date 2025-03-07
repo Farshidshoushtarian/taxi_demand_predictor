@@ -17,6 +17,9 @@ import sys
 from pathlib import Path
 from joblib import load  # Import the load function
 
+# Import the transform_raw_data_into_ts_data function
+from src.data import transform_raw_data_into_ts_data
+
 # Determine the project root directory
 project_root = Path(os.environ.get("GITHUB_WORKSPACE", os.getcwd())).resolve()
 src_path = project_root / "src"
