@@ -31,6 +31,8 @@ if not HOPSWORKS_PROJECT_NAME or not HOPSWORKS_API_KEY:
         "and contains HOPSWORKS_PROJECT_NAME and HOPSWORKS_API_KEY."
     )
 
+DATA_DIR = PARENT_DIR / "data"  # Added DATA_DIR variable
+
 FEATURE_GROUP_NAME = "time_series_hourly_feature_group"
 FEATURE_GROUP_VERSION = 4
 FEATURE_VIEW_NAME = "time_series_hourly_feature_view"
