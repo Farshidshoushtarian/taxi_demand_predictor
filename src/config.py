@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from dataclasses import dataclass
 from pathlib import Path
 import sys
 
@@ -20,7 +21,7 @@ dotenv_path = project_root / ".env"
 load_dotenv(dotenv_path)
 
 # Get environment variables
-HOPSWORKS_PROJECT_NAME = os.getenv("HOPSWORKS_PROJECT_NAME")
+HOPSWORKS_PROJECT_NAME = "taxi_demand_predictor"
 HOPSWORKS_API_KEY = os.getenv("HOPSWORKS_API_KEY")
 
 # Raise an error if they are missing
@@ -30,9 +31,31 @@ if not HOPSWORKS_PROJECT_NAME or not HOPSWORKS_API_KEY:
         "and contains HOPSWORKS_PROJECT_NAME and HOPSWORKS_API_KEY."
     )
 
-# TODO: remove FEATURE_GROUP_NAME and FEATURE_GROUP_VERSION, and use FEATURE_GROUP_METADATA instead
-FEATURE_GROUP_NAME = 'time_series_hourly_feature_group'
-FEATURE_GROUP_VERSION = 1
+FEATURE_GROUP_NAME = "time_series_hourly_feature_group"
+FEATURE_GROUP_VERSION = 4
+FEATURE_VIEW_NAME = "time_series_hourly_feature_view"
+FEATURE_VIEW_VERSION = 1
+
+MODEL_NAME = "taxi_demand_predictor_next_hour"
+MODEL_VERSION = 1
+
+@dataclass
+class FeatureGroupConfig:
+    name: str
+    version: int
+    description: str
+    primary_key: list
+    event_time: str
+    online_enabled: bool
+
+@dataclass
+class FeatureViewConfig:
+    name: str
+    version: int
+    feature_group_name: str
+    feature_group_version: int
+    query: str
+
 FEATURE_GROUP_METADATA = FeatureGroupConfig(
     name='time_series_hourly_feature_group',
     version=1,
@@ -42,20 +65,13 @@ FEATURE_GROUP_METADATA = FeatureGroupConfig(
     online_enabled=True,
 )
 
-# TODO: remove FEATURE_VIEW_NAME and FEATURE_VIEW_VERSION, and use FEATURE_VIEW_METADATA instead
-FEATURE_VIEW_NAME = 'time_series_hourly_feature_view'
-FEATURE_VIEW_VERSION = 1
 FEATURE_VIEW_METADATA = FeatureViewConfig(
     name='time_series_hourly_feature_view',
     version=1,
     feature_group=FEATURE_GROUP_METADATA,
 )
 
-MODEL_NAME = 'taxi_demand_predictor'
-
 # added for monitoring purposes
-# TODO remove FEATURE_GROUP_MODEL_PREDICTIONS and use FEATURE_GROUP_PREDICTIONS_METADATA instead
-FEATURE_GROUP_MODEL_PREDICTIONS = 'model_predictions_feature_group'
 FEATURE_GROUP_PREDICTIONS_METADATA = FeatureGroupConfig(
     name='model_predictions_feature_group',
     version=1,
@@ -64,8 +80,6 @@ FEATURE_GROUP_PREDICTIONS_METADATA = FeatureGroupConfig(
     event_time='pickup_ts',
 )
 
-# TODO remove FEATURE_VIEW_MODEL_PREDICTIONS and use FEATURE_VIEW_PREDICTIONS_METADATA instead
-FEATURE_VIEW_MODEL_PREDICTIONS = 'model_predictions_feature_view'
 FEATURE_VIEW_PREDICTIONS_METADATA = FeatureViewConfig(
     name='model_predictions_feature_view',
     version=1,
