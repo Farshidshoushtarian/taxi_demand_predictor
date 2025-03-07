@@ -80,6 +80,7 @@ FEATURE_GROUP_PREDICTIONS_METADATA = FeatureGroupConfig(
     description='Predictions generate by our production model',
     primary_key=['pickup_location_id', 'pickup_ts'],
     event_time='pickup_ts',
+    online_enabled=True,  # Added online_enabled argument
 )
 
 FEATURE_VIEW_PREDICTIONS_METADATA = FeatureViewConfig(
