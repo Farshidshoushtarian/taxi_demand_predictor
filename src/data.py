@@ -82,6 +82,12 @@ def load_raw_data(year: int, months: list[int] | int) -> pd.DataFrame:
                 # read the data from the file
                 rides_one_month = pd.read_parquet(local_file)
 
+                # Rename columns if they exist
+                if 'tpep_pickup_datetime' in rides_one_month.columns:
+                    rides_one_month.rename(columns={'tpep_pickup_datetime': 'pickup_datetime'}, inplace=True)
+                if 'PULocationID' in rides_one_month.columns:
+                    rides_one_month.rename(columns={'PULocationID': 'pickup_location_id'}, inplace=True)
+
                 # append the data to the DataFrame
                 rides = pd.concat([rides, rides_one_month])
             except Exception as e:
