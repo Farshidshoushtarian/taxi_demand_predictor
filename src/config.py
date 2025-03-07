@@ -21,7 +21,7 @@ dotenv_path = project_root / ".env"
 load_dotenv(dotenv_path)
 
 # Get environment variables
-HOPSWORKS_PROJECT_NAME = "taxi_demand_predictor"
+HOPSWORKS_PROJECT_NAME = "Taxi_demand_predictor"  # Changed to match project name
 HOPSWORKS_API_KEY = os.getenv("HOPSWORKS_API_KEY")
 
 # Raise an error if they are missing
