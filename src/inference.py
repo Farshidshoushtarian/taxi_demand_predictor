@@ -8,9 +8,21 @@ from hsfs.feature_view import FeatureView
 from hsfs.training_dataset import TrainingDataset
 
 from config_types import FeatureViewConfig
-import config as config
+import src.config as config  # Changed to absolute import
 from feature_store_api import get_or_create_feature_view
 from logger import get_logger
+
+import os
+import sys
+from pathlib import Path
+
+# Determine the project root directory
+project_root = Path(os.environ.get("GITHUB_WORKSPACE", os.getcwd())).resolve()
+src_path = project_root / "src"
+
+# Add src to Python path
+if str(src_path) not in sys.path:
+    sys.path.append(str(src_path))
 
 logger = get_logger()
 
@@ -158,18 +170,27 @@ def get_hopsworks_project() -> hopsworks.project.Project:
     )
 
 def get_model_predictions(model, features: pd.DataFrame) -> pd.DataFrame:
-    """"""
-    # past_rides_columns = [c for c in features.columns if c.startswith('rides_')]
-    predictions = model.predict(features)
+    """
+    Gets the model predictions
 
-    results = pd.DataFrame()
-    results['pickup_location_id'] = features['pickup_location_id'].values
-    results['predicted_demand'] = predictions.round(0)
-    
+    Args:
+        model: model
+        features (pd.DataFrame): features
+
+    Returns:
+        pd.DataFrame: predictions
+    """
+    predictions = model.predict(features)
+    results = pd.DataFrame({'predicted_demand': predictions})
     return results
 
 def load_model_from_registry():
-    
+    """
+    Loads the model from the model registry
+
+    Returns:
+        model: model
+    """
     import joblib
     from pathlib import Path
 
