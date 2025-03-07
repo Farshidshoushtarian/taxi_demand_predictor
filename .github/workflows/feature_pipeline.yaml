@@ -21,18 +21,11 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Create and activate virtual environment
+      - name: Create and activate virtual environment and execute script
         run: |
           python -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Set PYTHONPATH
-        run: |
           echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
-          source venv/bin/activate
-
-      - name: Execute inference pipeline script
-        run: |
           python src/inference_pipeline.py
