@@ -104,3 +104,6 @@ N_HYPERPARAMETER_SEARCH_TRIALS = 1
 
 # maximum Mean Absolute Error we allow our production model to have
 MAX_MAE = 30.0
+
+INPUT_SEQ_LEN = 168  # Define input sequence length
+STEP_SIZE = 1  # Define step size
