@@ -20,7 +20,7 @@ def average_rides_last_4_weeks(X: pd.DataFrame) -> np.ndarray:
         raise KeyError("Missing required column: 'average_rides_last_4_weeks'")
 
     # Extract the average number of rides for the past 4 weeks
-    avg_rides = X['average_rides_last_4_weeks'].values
+    avg_rides = X['average_rides_last_4_weeks'].values.reshape(-1, 1)
 
     return avg_rides
 
