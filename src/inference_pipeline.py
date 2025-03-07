@@ -2,14 +2,14 @@ import pandas as pd
 from datetime import datetime, timedelta, UTC
 import hopsworks
 import hsfs
+import os
 
 # Load configurations
 import sys
 from pathlib import Path
-import os
 
-# Determine the project root directory
-project_root = Path(os.getcwd()).resolve().parent
+# Determine the project root directory using GITHUB_WORKSPACE
+project_root = Path(os.environ.get("GITHUB_WORKSPACE", os.getcwd())).resolve()
 
 src_path = project_root / "src"
 
