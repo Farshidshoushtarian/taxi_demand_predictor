@@ -15,6 +15,7 @@ from logger import get_logger
 import os
 import sys
 from pathlib import Path
+from joblib import load  # Import the load function
 
 # Determine the project root directory
 project_root = Path(os.environ.get("GITHUB_WORKSPACE", os.getcwd())).resolve()
@@ -26,13 +27,12 @@ if str(src_path) not in sys.path:
 
 logger = get_logger()
 
-FEATURE_VIEW_NAME = "time_series_hourly_feature_view"
-FEATURE_VIEW_VERSION = 1
 TRAINING_DATASET_VERSION = 1
 
+# Correct the FEATURE_VIEW_PREDICTIONS_METADATA
 FEATURE_VIEW_PREDICTIONS_METADATA = FeatureViewConfig(
-    name=FEATURE_VIEW_NAME,
-    version=FEATURE_VIEW_VERSION,
+    name='model_predictions_feature_view',  # Correct name
+    version=1,  # Correct version
     feature_group=None # not needed for now
 )
 
@@ -142,7 +142,7 @@ def load_batch_of_features_from_store(current_date: datetime) -> pd.DataFrame:
         pd.DataFrame: features
     """
     # one feature view contains all the features
-    features_fv = get_or_create_feature_view(FEATURE_VIEW_PREDICTIONS_METADATA)
+    features_fv = get_or_create_feature_view(config.FEATURE_VIEW_FEATURES_METADATA) #LOAD FEATURES FEATURE VIEW
 
     # we want the last 25 hours of training data
     start_date = current_date - timedelta(hours=25)
@@ -161,13 +161,6 @@ def load_batch_of_features_from_store(current_date: datetime) -> pd.DataFrame:
     features_df.sort_values(by=['pickup_location_id', 'pickup_hour'], inplace=True)
     
     return features_df
-
-def get_hopsworks_project() -> hopsworks.project.Project:
-
-    return hopsworks.login(
-        project=config.HOPSWORKS_PROJECT_NAME,
-        api_key_value=config.HOPSWORKS_API_KEY
-    )
 
 def get_model_predictions(model, features: pd.DataFrame) -> pd.DataFrame:
     """
