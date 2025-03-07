@@ -1,31 +1,91 @@
-from pathlib import Path
+import os
+import pandas as pd
 from datetime import datetime, timedelta
+from pathlib import Path
+import requests
+import sys
+from io import BytesIO
 from typing import Optional, List, Tuple
 from pdb import set_trace as stop
 
 import numpy as np
-import pandas as pd
-import requests
 from tqdm import tqdm
 
-from paths import RAW_DATA_DIR, TRANSFORMED_DATA_DIR
+# Determine the project root directory
+project_root = Path(__file__).resolve().parent.parent
+src_path = project_root / "src"
 
+# Add src to Python path
+if str(src_path) not in sys.path:
+    sys.path.append(str(src_path))
 
-def download_one_file_of_raw_data(year: int, month: int) -> Path:
+from src.config import DATA_DIR
+from src.logger import get_logger
+
+logger = get_logger()
+
+def download_file(year: int, month: int) -> Path:
     """
-    Downloads Parquet file with historical taxi rides for the given `year` and
-    `month`
+    Downloads the data for a given year and month from the NYC Taxi website
+
+    Args:
+        year (int): year
+        month (int): month
+
+    Returns:
+        Path: the path to the downloaded file
     """
     URL = f'https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{year}-{month:02d}.parquet'
-    response = requests.get(URL)
+    local_file = DATA_DIR / f'yellow_tripdata_{year}-{month:02d}.parquet'
 
-    if response.status_code == 200:
-        path = RAW_DATA_DIR / f'rides_{year}-{month:02d}.parquet'
-        open(path, "wb").write(response.content)
-        return path
-    else:
-        raise Exception(f'{URL} is not available')
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
 
+    logger.info(f'Downloading file {URL}')
+    try:
+        response = requests.get(URL)
+        response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+
+        with open(local_file, 'wb') as f:
+            f.write(response.content)
+
+        logger.info(f'Downloaded file {local_file}')
+        return local_file
+    except requests.exceptions.RequestException as e:
+        logger.error(f'Error downloading {URL}: {e}')
+        return None
+
+def load_raw_data(year: int, months: list[int]) -> pd.DataFrame:
+    """
+    Loads the raw data for a given year and month
+
+    Args:
+        year (int): year
+        month (int): month
+
+    Returns:
+        pd.DataFrame: the raw data
+    """
+    # create an empty DataFrame to store the data
+    rides = pd.DataFrame()
+
+    for month in months:
+        # download the file
+        local_file = download_file(year, month)
+
+        if local_file is not None:
+            try:
+                # read the data from the file
+                rides_one_month = pd.read_parquet(local_file)
+
+                # append the data to the DataFrame
+                rides = pd.concat([rides, rides_one_month])
+            except Exception as e:
+                logger.error(f'Error reading {local_file}: {e}')
+        else:
+            logger.warning(f'File not found for year={year}, month={month}')
+
+    return rides
 
 def validate_raw_data(
     rides: pd.DataFrame,
@@ -79,71 +139,6 @@ def fetch_ride_events_from_data_warehouse(
     return rides
 
 
-def load_raw_data(
-    year: int,
-    months: Optional[List[int]] = None
-) -> pd.DataFrame:
-    """
-    Loads raw data from local storage or downloads it from the NYC website, and
-    then loads it into a Pandas DataFrame
-
-    Args:
-        year: year of the data to download
-        months: months of the data to download. If `None`, download all months
-
-    Returns:
-        pd.DataFrame: DataFrame with the following columns:
-            - pickup_datetime: datetime of the pickup
-            - pickup_location_id: ID of the pickup location
-    """  
-    rides = pd.DataFrame()
-    
-    if months is None:
-        # download data for the entire year (all months)
-        months = list(range(1, 13))
-    elif isinstance(months, int):
-        # download data only for the month specified by the int `month`
-        months = [months]
-
-    for month in months:
-        
-        local_file = RAW_DATA_DIR / f'rides_{year}-{month:02d}.parquet'
-        if not local_file.exists():
-            try:
-                # download the file from the NYC website
-                print(f'Downloading file {year}-{month:02d}')
-                download_one_file_of_raw_data(year, month)
-            except:
-                print(f'{year}-{month:02d} file is not available')
-                continue
-        else:
-            print(f'File {year}-{month:02d} was already in local storage') 
-
-        # load the file into Pandas
-        rides_one_month = pd.read_parquet(local_file)
-
-        # rename columns
-        rides_one_month = rides_one_month[['tpep_pickup_datetime', 'PULocationID']]
-        rides_one_month.rename(columns={
-            'tpep_pickup_datetime': 'pickup_datetime',
-            'PULocationID': 'pickup_location_id',
-        }, inplace=True)
-
-        # validate the file
-        rides_one_month = validate_raw_data(rides_one_month, year, month)
-
-        # append to existing data
-        rides = pd.concat([rides, rides_one_month])
-
-    if rides.empty:
-        # no data, so we return an empty dataframe
-        return pd.DataFrame()
-    else:
-        # keep only time and origin of the ride
-        rides = rides[['pickup_datetime', 'pickup_location_id']]
-        return rides
-
-
 def add_missing_slots(ts_data: pd.DataFrame) -> pd.DataFrame:
     """
     Add necessary rows to the input 'ts_data' to make sure the output
@@ -188,16 +183,22 @@ def add_missing_slots(ts_data: pd.DataFrame) -> pd.DataFrame:
 def transform_raw_data_into_ts_data(
     rides: pd.DataFrame
 ) -> pd.DataFrame:
-    """"""
-    # sum rides per location and pickup_hour
+    """
+    Transforms the raw data into time series data
+
+    Args:
+        rides (pd.DataFrame): the raw data
+
+    Returns:
+        pd.DataFrame: the time series data
+    """
+    # group by pickup location ID and pickup hour
     rides['pickup_hour'] = rides['pickup_datetime'].dt.floor('H')
-    agg_rides = rides.groupby(['pickup_hour', 'pickup_location_id']).size().reset_index()
-    agg_rides.rename(columns={0: 'rides'}, inplace=True)
+    ts_data = rides.groupby(['pickup_location_id', 'pickup_hour'])[['ride_id']].count()
+    ts_data = ts_data.reset_index()
+    ts_data.rename(columns={'ride_id': 'rides'}, inplace=True)
 
-    # add rows for (locations, pickup_hours)s with 0 rides
-    agg_rides_all_slots = add_missing_slots(agg_rides)
-
-    return agg_rides_all_slots
+    return ts_data
 
 
 def transform_ts_data_into_features_and_target(
