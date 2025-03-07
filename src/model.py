@@ -1,25 +1,37 @@
 import pandas as pd
+import numpy as np
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import make_pipeline, Pipeline
 
 import lightgbm as lgb
+def average_rides_last_4_weeks(X: pd.DataFrame) -> np.ndarray:
+    """
+    Calculates the average number of rides for the past 4 weeks
 
-def average_rides_last_4_weeks(X: pd.DataFrame) -> pd.DataFrame:
+    Args:
+        X (pd.DataFrame): features
+
+    Returns:
+        np.ndarray: average number of rides for the past 4 weeks
     """
-    Adds one column with the average rides from
-    - 7 days ago
-    - 14 days ago
-    - 21 days ago
-    - 28 days ago
-    """
-    X['average_rides_last_4_weeks'] = 0.25*(
-        X[f'rides_previous_{7*24}_hour'] + \
-        X[f'rides_previous_{2*7*24}_hour'] + \
-        X[f'rides_previous_{3*7*24}_hour'] + \
-        X[f'rides_previous_{4*7*24}_hour']
-    )
-    return X
+    # Convert pickup_hour to datetime if it's not already
+    if not pd.api.types.is_datetime64_any_dtype(X['pickup_hour']):
+        X['pickup_hour'] = pd.to_datetime(X['pickup_hour'])
+
+    # Calculate the average number of rides for the past 4 weeks
+    # Use a list comprehension to dynamically access the feature columns
+    ride_cols = [f'rides_previous_{i+1}_hour' for i in range(24*7)]  # Corrected feature names
+
+    # Ensure all expected columns are present
+    if not all(col in X.columns for col in ride_cols):
+        missing_cols = [col for col in ride_cols if col not in X.columns]
+        raise KeyError(f"Missing required columns: {missing_cols}")
+
+    # Calculate the average
+    avg_rides = np.mean(X[ride_cols].values, axis=1)
+
+    return avg_rides
 
 
 class TemporalFeaturesEngineer(BaseEstimator, TransformerMixin):
