@@ -93,13 +93,12 @@ FEATURE_VIEW_PREDICTIONS_METADATA = FeatureViewConfig(
     query="SELECT * FROM {}".format(FEATURE_GROUP_PREDICTIONS_METADATA.name)
 )
 
-# ADD THIS
 FEATURE_VIEW_FEATURES_METADATA = FeatureViewConfig(
     name='time_series_hourly_feature_view',  # Correct FeatureView name
     version=1,
     feature_group_name=FEATURE_GROUP_METADATA.name,
     feature_group_version=FEATURE_GROUP_METADATA.version,
-    query="SELECT * FROM {}".format(FEATURE_GROUP_METADATA.name)
+    query="SELECT pickup_datetime, * FROM {}".format(FEATURE_GROUP_METADATA.name)  # Include pickup_datetime
 )
 
 MONITORING_FV_NAME = 'monitoring_feature_view'
