@@ -55,19 +55,23 @@ def download_file(year: int, month: int) -> Path:
         logger.error(f'Error downloading {URL}: {e}')
         return None
 
-def load_raw_data(year: int, months: list[int]) -> pd.DataFrame:
+def load_raw_data(year: int, months: list[int] | int) -> pd.DataFrame:
     """
     Loads the raw data for a given year and month
 
     Args:
         year (int): year
-        month (int): month
+        months (list[int] | int): month or list of months
 
     Returns:
         pd.DataFrame: the raw data
     """
     # create an empty DataFrame to store the data
     rides = pd.DataFrame()
+
+    # Ensure months is always a list
+    if isinstance(months, int):
+        months = [months]
 
     for month in months:
         # download the file
