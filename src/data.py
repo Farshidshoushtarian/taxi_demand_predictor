@@ -192,7 +192,7 @@ def add_missing_slots(ts_data: pd.DataFrame) -> pd.DataFrame:
 
 def transform_raw_data_into_ts_data(rides: pd.DataFrame) -> pd.DataFrame:
     """
-    Transforms the raw data into time series data and generates features for the past 168 hours.
+    Transforms the raw data into time series data and generates features for the past 4 weeks.
 
     Args:
         rides (pd.DataFrame): the raw data
@@ -207,9 +207,12 @@ def transform_raw_data_into_ts_data(rides: pd.DataFrame) -> pd.DataFrame:
     # Sort by pickup_location_id and pickup_hour to ensure correct order for feature generation
     ts_data = ts_data.sort_values(by=['pickup_location_id', 'pickup_hour'])
 
-    # Generate features for the past 168 hours
+    # Generate features for the past 4 weeks (168 hours)
     for i in range(1, 169):
         ts_data[f'rides_previous_{i}_hour'] = ts_data.groupby('pickup_location_id')['rides'].shift(i)
+
+    # Calculate the average number of rides for the past 4 weeks
+    ts_data['average_rides_last_4_weeks'] = ts_data[[f'rides_previous_{i}_hour' for i in range(1, 169)]].mean(axis=1)
 
     return ts_data
 

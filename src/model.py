@@ -15,21 +15,12 @@ def average_rides_last_4_weeks(X: pd.DataFrame) -> np.ndarray:
     Returns:
         np.ndarray: average number of rides for the past 4 weeks
     """
-    # Convert pickup_hour to datetime if it's not already
-    if not pd.api.types.is_datetime64_any_dtype(X['pickup_hour']):
-        X['pickup_hour'] = pd.to_datetime(X['pickup_hour'])
+    # Check if 'average_rides_last_4_weeks' column exists
+    if 'average_rides_last_4_weeks' not in X.columns:
+        raise KeyError("Missing required column: 'average_rides_last_4_weeks'")
 
-    # Calculate the average number of rides for the past 4 weeks
-    # Use a list comprehension to dynamically access the feature columns
-    ride_cols = [f'rides_previous_{i+1}_hour' for i in range(24*7)]  # Corrected feature names
-
-    # Ensure all expected columns are present
-    if not all(col in X.columns for col in ride_cols):
-        missing_cols = [col for col in ride_cols if col not in X.columns]
-        raise KeyError(f"Missing required columns: {missing_cols}")
-
-    # Calculate the average
-    avg_rides = np.mean(X[ride_cols].values, axis=1)
+    # Extract the average number of rides for the past 4 weeks
+    avg_rides = X['average_rides_last_4_weeks'].values
 
     return avg_rides
 
