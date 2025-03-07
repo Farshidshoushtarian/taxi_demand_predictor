@@ -204,9 +204,7 @@ def transform_raw_data_into_ts_data(
     """
     # group by pickup location ID and pickup hour
     rides['pickup_hour'] = rides['pickup_datetime'].dt.floor('H')
-    ts_data = rides.groupby(['pickup_location_id', 'pickup_hour'])[['ride_id']].count()
-    ts_data = ts_data.reset_index()
-    ts_data.rename(columns={'ride_id': 'rides'}, inplace=True)
+    ts_data = rides.groupby(['pickup_location_id', 'pickup_hour']).size().reset_index(name='rides')
 
     return ts_data
 
