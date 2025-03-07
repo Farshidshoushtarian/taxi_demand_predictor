@@ -190,31 +190,31 @@ def add_missing_slots(ts_data: pd.DataFrame) -> pd.DataFrame:
     return output
 
 
-def transform_raw_data_into_ts_data(
-    rides: pd.DataFrame
-) -> pd.DataFrame:
+def transform_raw_data_into_ts_data(rides: pd.DataFrame) -> pd.DataFrame:
     """
-    Transforms the raw data into time series data
+    Transforms the raw data into time series data and generates features for the past 168 hours.
 
     Args:
         rides (pd.DataFrame): the raw data
 
     Returns:
-        pd.DataFrame: the time series data
+        pd.DataFrame: the time series data with added features
     """
     # group by pickup location ID and pickup hour
     rides['pickup_hour'] = rides['pickup_datetime'].dt.floor('H')
     ts_data = rides.groupby(['pickup_location_id', 'pickup_hour']).size().reset_index(name='rides')
 
+    # Sort by pickup_location_id and pickup_hour to ensure correct order for feature generation
+    ts_data = ts_data.sort_values(by=['pickup_location_id', 'pickup_hour'])
+
+    # Generate features for the past 168 hours
+    for i in range(1, 169):
+        ts_data[f'rides_previous_{i}_hour'] = ts_data.groupby('pickup_location_id')['rides'].shift(i)
+
     return ts_data
 
 
 def transform_ts_data_into_features_and_target(
-    ts_data: pd.DataFrame,
-    input_seq_len: int,
-    step_size: int
-) -> Tuple[pd.DataFrame, pd.Series]:
-    """
     Slices and transposes data from time-series format into a (features, target)
     format that we can use to train Supervised ML models
     """
