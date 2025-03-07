@@ -201,7 +201,7 @@ def transform_raw_data_into_ts_data(rides: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: the time series data with added features
     """
     # group by pickup location ID and pickup hour
-    rides['pickup_hour'] = rides['pickup_datetime'].dt.floor('H')
+    rides['pickup_hour'] = rides['pickup_ts'].dt.floor('H')  # Changed to pickup_ts
     ts_data = rides.groupby(['pickup_location_id', 'pickup_hour']).size().reset_index(name='rides')
 
     # Sort by pickup_location_id and pickup_hour to ensure correct order for feature generation
@@ -213,6 +213,9 @@ def transform_raw_data_into_ts_data(rides: pd.DataFrame) -> pd.DataFrame:
 
     # Calculate the average number of rides for the past 4 weeks
     ts_data['average_rides_last_4_weeks'] = ts_data[[f'rides_previous_{i}_hour' for i in range(1, 169)]].mean(axis=1)
+
+    # Forward fill missing values in 'average_rides_last_4_weeks'
+    ts_data['average_rides_last_4_weeks'] = ts_data['average_rides_last_4_weeks'].ffill()
 
     return ts_data
 
