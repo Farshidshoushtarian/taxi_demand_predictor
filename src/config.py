@@ -68,7 +68,9 @@ FEATURE_GROUP_METADATA = FeatureGroupConfig(
 FEATURE_VIEW_METADATA = FeatureViewConfig(
     name='time_series_hourly_feature_view',
     version=1,
-    feature_group=FEATURE_GROUP_METADATA,
+    feature_group_name=FEATURE_GROUP_METADATA.name,
+    feature_group_version=FEATURE_GROUP_METADATA.version,
+    query="SELECT * FROM {}".format(FEATURE_GROUP_METADATA.name)
 )
 
 # added for monitoring purposes
@@ -83,7 +85,9 @@ FEATURE_GROUP_PREDICTIONS_METADATA = FeatureGroupConfig(
 FEATURE_VIEW_PREDICTIONS_METADATA = FeatureViewConfig(
     name='model_predictions_feature_view',
     version=1,
-    feature_group=FEATURE_GROUP_PREDICTIONS_METADATA,
+    feature_group_name=FEATURE_GROUP_PREDICTIONS_METADATA.name,
+    feature_group_version=FEATURE_GROUP_PREDICTIONS_METADATA.version,
+    query="SELECT * FROM {}".format(FEATURE_GROUP_PREDICTIONS_METADATA.name)
 )
 
 MONITORING_FV_NAME = 'monitoring_feature_view'
