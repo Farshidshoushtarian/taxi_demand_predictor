@@ -202,7 +202,7 @@ def load_model_from_registry():
     )
     model_dir = model.download()
     # Modify the model path to point to the correct location
-    model_path = Path(model_dir) / "models" / "model.pkl"  # Corrected path
+    model_path = Path(model_dir) / "model.pkl"  # Corrected path - REMOVE "models"
     print(f"Model path: {model_path}")
     model = load(model_path)
 
