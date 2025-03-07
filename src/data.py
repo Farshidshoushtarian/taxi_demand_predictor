@@ -215,6 +215,11 @@ def transform_raw_data_into_ts_data(rides: pd.DataFrame) -> pd.DataFrame:
 
 
 def transform_ts_data_into_features_and_target(
+    ts_data: pd.DataFrame,
+    input_seq_len: int,
+    step_size: int
+) -> Tuple[pd.DataFrame, pd.Series]:
+    """
     Slices and transposes data from time-series format into a (features, target)
     format that we can use to train Supervised ML models
     """
