@@ -17,11 +17,11 @@ src_path = project_root / "src"
 if str(src_path) not in sys.path:
     sys.path.append(str(src_path))
 
-# Now you can do relative imports
-from src.inference import load_model_from_registry, get_model_predictions
-from src.data import load_raw_data, transform_raw_data_into_ts_data
-from src.config import HOPSWORKS_PROJECT_NAME, HOPSWORKS_API_KEY, FEATURE_GROUP_NAME, FEATURE_GROUP_VERSION
-#from src.feature_store_api import create_feature_group_if_not_exists, get_feature_store #Not needed here
+# Now you can do absolute imports
+from inference import load_model_from_registry, get_model_predictions
+from data import load_raw_data, transform_raw_data_into_ts_data
+from config import HOPSWORKS_PROJECT_NAME, HOPSWORKS_API_KEY, FEATURE_GROUP_NAME, FEATURE_GROUP_VERSION
+#from feature_store_api import create_feature_group_if_not_exists, get_feature_store #Not needed here
 
 # Connect to Hopsworks
 project = hopsworks.login(
