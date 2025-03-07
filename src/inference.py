@@ -180,8 +180,12 @@ def get_model_predictions(model, features: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: predictions
     """
+
+    # Transform raw data into time series data
+    features = transform_raw_data_into_ts_data(features)
+
     predictions = model.predict(features)
-    results = pd.DataFrame({'predicted_demand': predictions})
+    results = pd.DataFrame({'predicted_demand': predictions.flatten()})  # Flatten predictions
     return results
 
 def load_model_from_registry():
@@ -191,18 +195,20 @@ def load_model_from_registry():
     Returns:
         model: model
     """
-    import joblib
-    from pathlib import Path
+    # connect to the project
+    project = hopsworks.login(
+        project=config.HOPSWORKS_PROJECT_NAME,
+        api_key_value=config.HOPSWORKS_API_KEY
+    )
 
-    project = get_hopsworks_project()
-    model_registry = project.get_model_registry()
-
-    model = model_registry.get_model(
-        name=config.MODEL_NAME,
-        version=config.MODEL_VERSION,
-    )  
-    
+    mr = project.get_model_registry()
+    # the model is the latest model in the Model Registry
+    model = mr.get_model(
+        name = config.MODEL_NAME,
+        version = config.MODEL_VERSION
+    )
     model_dir = model.download()
-    model = joblib.load(Path(model_dir)  / 'model.pkl')
-       
+    model = load(Path(model_dir) / "taxi_model.pkl")
+
+    print("Model loaded")
     return model
