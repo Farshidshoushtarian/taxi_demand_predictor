@@ -27,7 +27,11 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
 
+      - name: Set PYTHONPATH
+        run: |
+          echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
+          source venv/bin/activate
+
       - name: Execute inference pipeline script
         run: |
-          source venv/bin/activate
           python src/inference_pipeline.py
